@@ -5,9 +5,22 @@ from __future__ import print_function, unicode_literals
 import sys, os
 import subprocess
 
-fin = open(sys.argv[1], "w")
+#WINE_ROOT = sys.argv[1]
+#WINE_LOG = sys.argv[2]
 
-proc = subprocess.Popen('/dev/shm/test', shell=True,
+WINE_ROOT = "/home/lizhenbo/src/wine"
+WINE_LOG = "/dev/shm/log"
+
+fin = open(WINE_LOG, "w")
+
+test_path = os.path.join(WINE_ROOT, "dlls/riched20/tests")
+
+test_cmd = "cd " + test_path + " && make && make test"
+print(test_cmd, file=fin)
+
+proc = subprocess.Popen(
+        test_cmd,
+        shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 path = proc.communicate()
