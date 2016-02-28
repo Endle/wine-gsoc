@@ -5,17 +5,17 @@ from __future__ import print_function, unicode_literals
 import sys, os
 import subprocess
 
-#WINE_ROOT = sys.argv[1]
-#WINE_LOG = sys.argv[2]
+WINE_ROOT = sys.argv[1]
+WINE_LOG = sys.argv[2]
 
-WINE_ROOT = "/home/lizhenbo/src/wine"
-WINE_LOG = "/dev/shm/log"
+#WINE_ROOT = "/home/lizhenbo/src/wine"
+#WINE_LOG = "/dev/shm/log"
 
 fin = open(WINE_LOG, "w")
 
 test_path = os.path.join(WINE_ROOT, "dlls/riched20/tests")
 
-test_cmd = "cd " + test_path + " && make && make test"
+test_cmd = "cd " + test_path + " && make clean && make && make test"
 print(test_cmd, file=fin)
 
 proc = subprocess.Popen(
