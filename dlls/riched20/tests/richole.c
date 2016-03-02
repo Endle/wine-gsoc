@@ -2572,6 +2572,8 @@ todo_wine
   ITextRange_Release(range);
   ITextRange_Release(range2);
   release_interfaces(&hwnd, &reOle, &doc, NULL);
+
+  ok(0, "Fail in Delete\n");
 }
 
 static void test_SetText(void)
