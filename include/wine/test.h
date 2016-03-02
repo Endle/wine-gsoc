@@ -56,6 +56,7 @@ extern int winetest_interactive;
 extern const char *winetest_platform;
 
 extern void winetest_set_location( const char* file, int line );
+extern void winetest_set_location_new( const char* file, int line , const char *function);
 extern void winetest_start_todo( int is_todo );
 extern int winetest_loop_todo(void);
 extern void winetest_end_todo(void);
@@ -109,11 +110,12 @@ extern void __winetest_cdecl winetest_win_skip( const char *msg, ... ) WINETEST_
 extern void __winetest_cdecl winetest_trace( const char *msg, ... ) WINETEST_PRINTF_ATTR(1,2);
 
 #define ok_(file, line)       (winetest_set_location(file, line), 0) ? (void)0 : winetest_ok
+#define ok_new(file, line,func)  (winetest_set_location_new(file, line,func), 0) ? (void)0 : winetest_ok
 #define skip_(file, line)     (winetest_set_location(file, line), 0) ? (void)0 : winetest_skip
 #define win_skip_(file, line) (winetest_set_location(file, line), 0) ? (void)0 : winetest_win_skip
 #define trace_(file, line)    (winetest_set_location(file, line), 0) ? (void)0 : winetest_trace
 
-#define ok       ok_(__FILE__, __LINE__)
+#define ok       ok_new(__FILE__, __LINE__, __FUNCTION__)
 #define skip     skip_(__FILE__, __LINE__)
 #define win_skip win_skip_(__FILE__, __LINE__)
 #define trace    trace_(__FILE__, __LINE__)
@@ -221,6 +223,7 @@ typedef struct
 {
     const char* current_file;        /* file of current check */
     int current_line;                /* line of current check */
+    const char *current_function;
     unsigned int todo_level;         /* current todo nesting level */
     int todo_do_loop;
     char *str_pos;                   /* position in debug buffer */
@@ -283,6 +286,21 @@ void winetest_set_location( const char* file, int line )
     data->current_line=line;
 }
 
+void winetest_set_location_new( const char* file, int line , const char *function)
+{
+    tls_data* data=get_tls_data();
+    data->current_file=strrchr(file,'/');
+    if (data->current_file==NULL)
+        data->current_file=strrchr(file,'\\');
+    if (data->current_file==NULL)
+        data->current_file=file;
+    else
+        data->current_file++;
+    data->current_line=line;
+
+    data->current_function = function;
+}
+
 int broken( int condition )
 {
     return (strcmp(winetest_platform, "windows") == 0) && condition;
@@ -328,8 +346,8 @@ int winetest_vok( int condition, const char *msg, __winetest_va_list args )
     {
         if (!condition)
         {
-            printf( "%s:%d: Test failed: ",
-                    data->current_file, data->current_line );
+            printf( "%s:%s:%d: Test failed: ",
+                    data->current_file, data->current_function, data->current_line );
             vprintf(msg, args);
             InterlockedIncrement(&failures);
             return 0;
